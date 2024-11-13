@@ -9,9 +9,8 @@
 // This test is too big for most embedded devices.
 // XFAIL: LIBCXX-PICOLIBC-FIXME
 
-// https://llvm.org/PR51407 was not fixed in some previously-released
-// demanglers, which causes them to run into the infinite loop.
-// UNSUPPORTED: using-built-library-before-llvm-14
+// This test exercises support for char array initializer lists added in dd8b266ef.
+// UNSUPPORTED: using-built-library-before-llvm-20
 
 // Android's long double on x86[-64] is (64/128)-bits instead of Linux's usual
 // 80-bit format, and this demangling test is failing on it.
@@ -30219,6 +30218,32 @@ const char* cases[][2] =
     {"_ZZN3Foo3fooEiENH4Foo24foo2EOKS0_", "Foo::foo(int)::Foo2::foo2(this Foo2 const&&)"},
     {"_ZZNH3Foo3fooES_iENK4Foo24foo2Ev", "Foo::foo(this Foo, int)::Foo2::foo2() const" },
     {"_ZNH3FooclERKS_", "Foo::operator()(this Foo const&)"},
+
+    // fixed-point types as defined in the N1169 draft of ISO/IEC DTR 18037
+    {"_Z1fDAs", "f(short _Accum)"},
+    {"_Z1fDAt", "f(unsigned short _Accum)"},
+    {"_Z1fDAi", "f(_Accum)"},
+    {"_Z1fDAj", "f(unsigned _Accum)"},
+    {"_Z1fDAl", "f(long _Accum)"},
+    {"_Z1fDAm", "f(unsigned long _Accum)"},
+    {"_Z1fDRs", "f(short _Fract)"},
+    {"_Z1fDRt", "f(unsigned short _Fract)"},
+    {"_Z1fDRi", "f(_Fract)"},
+    {"_Z1fDRj", "f(unsigned _Fract)"},
+    {"_Z1fDRl", "f(long _Fract)"},
+    {"_Z1fDRm", "f(unsigned long _Fract)"},
+    {"_Z1fDSDAs", "f(_Sat short _Accum)"},
+    {"_Z1fDSDAt", "f(_Sat unsigned short _Accum)"},
+    {"_Z1fDSDAi", "f(_Sat _Accum)"},
+    {"_Z1fDSDAj", "f(_Sat unsigned _Accum)"},
+    {"_Z1fDSDAl", "f(_Sat long _Accum)"},
+    {"_Z1fDSDAm", "f(_Sat unsigned long _Accum)"},
+    {"_Z1fDSDRs", "f(_Sat short _Fract)"},
+    {"_Z1fDSDRt", "f(_Sat unsigned short _Fract)"},
+    {"_Z1fDSDRi", "f(_Sat _Fract)"},
+    {"_Z1fDSDRj", "f(_Sat unsigned _Fract)"},
+    {"_Z1fDSDRl", "f(_Sat long _Fract)"},
+    {"_Z1fDSDRm", "f(_Sat unsigned long _Fract)"},
 };
 // clang-format on
 
