@@ -13,10 +13,6 @@
 // dd8b266ef.
 // UNSUPPORTED: using-built-library-before-llvm-20
 
-// Android's long double on x86[-64] is (64/128)-bits instead of Linux's usual
-// 80-bit format, and this demangling test is failing on it.
-// XFAIL: LIBCXX-ANDROID-FIXME && target={{i686|x86_64}}-{{.+}}-android{{.*}}
-
 // XFAIL: win32-broken-printf-a-precision
 
 #include "support/timer.h"
@@ -33,7 +29,7 @@
 // Is long double fp128?
 #define LDBL_FP128 (__LDBL_MANT_DIG__ == 113)
 
-const char *cases[][2] = {
+const char* cases[][2] = {
     // clang-format off
     {"_Z1A", "A"},
     {"_Z1Av", "A()"},
@@ -30245,6 +30241,11 @@ const char *cases[][2] = {
     {"_Z1fDSDRj", "f(_Sat unsigned _Fract)"},
     {"_Z1fDSDRl", "f(_Sat long _Fract)"},
     {"_Z1fDSDRm", "f(_Sat unsigned long _Fract)"},
+
+    {"_Z11bfloat16addDF16bDF16b", "bfloat16add(std::bfloat16_t, std::bfloat16_t)"},
+
+    {"_Z3fooPU9__ptrauthILj3ELb1ELj234EEPi", "foo(int* __ptrauth<3u, true, 234u>*)"},
+    {"_Z3fooIPU9__ptrauthILj1ELb0ELj64EEPiEvT_", "void foo<int* __ptrauth<1u, false, 64u>*>(int* __ptrauth<1u, false, 64u>*)"},
     // clang-format on
 };
 
