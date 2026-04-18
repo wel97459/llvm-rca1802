@@ -52,6 +52,7 @@ StringRef Triple::getArchTypeName(ArchType Kind) {
   case mips:           return "mips";
   case mipsel:         return "mipsel";
   case mos:            return "mos";
+  case rca1802:        return "rca1802";
   case msp430:         return "msp430";
   case nvptx64:        return "nvptx64";
   case nvptx:          return "nvptx";
@@ -258,6 +259,7 @@ StringRef Triple::getArchTypePrefix(ArchType Kind) {
   case loongarch64: return "loongarch";
 
   case mos:         return "mos";
+  case rca1802:     return "rca1802";
 
   case dxil:        return "dx";
 
@@ -526,6 +528,7 @@ Triple::ArchType Triple::getArchTypeForLLVMName(StringRef Name) {
       .Case("loongarch32", loongarch32)
       .Case("loongarch64", loongarch64)
       .Case("mos", mos)
+      .Case("rca1802", rca1802)
       .Case("dxil", dxil)
       .Case("xtensa", xtensa)
       .Default(UnknownArch);
@@ -625,6 +628,7 @@ static Triple::ArchType parseArch(StringRef ArchName) {
           .Case("avr", Triple::avr)
           .Case("m68k", Triple::m68k)
           .Case("mos", Triple::mos)
+          .Case("rca1802", Triple::rca1802)
           .Case("msp430", Triple::msp430)
           .Cases({"mips", "mipseb", "mipsallegrex", "mipsisa32r6", "mipsr6"},
                  Triple::mips)
@@ -1019,6 +1023,7 @@ static Triple::ObjectFormatType getDefaultFormat(const Triple &T) {
   case Triple::mips64el:
   case Triple::mips:
   case Triple::mos:
+  case Triple::rca1802:
   case Triple::msp430:
   case Triple::nvptx64:
   case Triple::nvptx:
@@ -1852,6 +1857,7 @@ Triple Triple::get32BitArchVariant() const {
   case Triple::bpfeb:
   case Triple::bpfel:
   case Triple::mos:
+  case Triple::rca1802:
   case Triple::msp430:
   case Triple::systemz:
   case Triple::ve:
@@ -1940,6 +1946,7 @@ Triple Triple::get64BitArchVariant() const {
   case Triple::lanai:
   case Triple::m68k:
   case Triple::mos:
+  case Triple::rca1802:
   case Triple::msp430:
   case Triple::r600:
   case Triple::shave:
@@ -2030,6 +2037,7 @@ Triple Triple::getBigEndianArchVariant() const {
   case Triple::loongarch32:
   case Triple::loongarch64:
   case Triple::mos:
+  case Triple::rca1802:
   case Triple::msp430:
   case Triple::nvptx64:
   case Triple::nvptx:
@@ -2146,6 +2154,7 @@ bool Triple::isLittleEndian() const {
   case Triple::mips64el:
   case Triple::mipsel:
   case Triple::mos:
+  case Triple::rca1802:
   case Triple::msp430:
   case Triple::nvptx64:
   case Triple::nvptx:

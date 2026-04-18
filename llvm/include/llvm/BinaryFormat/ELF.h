@@ -326,6 +326,7 @@ enum {
   EM_CSKY = 252,          // C-SKY 32-bit processor
   EM_LOONGARCH = 258,     // LoongArch
   EM_MOS = 6502,          // MOS Technologies 65xx
+  EM_RCA1802 = 1802,      // RCA 1802
 };
 
 // Object file classes.
@@ -520,9 +521,20 @@ enum {
   STO_MOS_ZEROPAGE = 0x20
 };
 
+// Special values for the st_other field in the symbol table entry for RCA1802.
+enum {
+  // External symbol is in the zero page.
+  STO_RCA1802_ZEROPAGE = 0x20
+};
+
 // ELF relocation types for MOS
 enum {
 #include "ELFRelocs/MOS.def"
+};
+
+// ELF relocation types for RCA1802
+enum {
+#include "ELFRelocs/RCA1802.def"
 };
 
 // https://llvm-mos.org/wiki/ELF_specification
@@ -1379,7 +1391,8 @@ enum : unsigned {
   SHF_AARCH64_PURECODE = 0x20000000,
 
   // 8-bit addressable section
-  SHF_MOS_ZEROPAGE = 0x10000000
+  SHF_MOS_ZEROPAGE = 0x10000000,
+  SHF_RCA1802_ZEROPAGE = 0x10000000
 };
 
 // Section Group Flags
