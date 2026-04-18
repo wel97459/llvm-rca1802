@@ -6,3 +6,6 @@
 
 ## Development Environment
 - LLVM toolchain for development and testing.
+
+## Supported Architectures
+- RCA1802
