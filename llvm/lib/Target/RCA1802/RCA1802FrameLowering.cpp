@@ -1,4 +1,5 @@
-//===-- RCA1802FrameLowering.cpp - RCA1802 Frame Lowering -------------------------===//
+//===-- RCA1802FrameLowering.cpp - RCA1802 Frame Lowering
+//-------------------------===//
 //
 // Part of LLVM-RCA1802, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -12,6 +13,7 @@
 
 #include "RCA1802FrameLowering.h"
 #include "RCA1802InstrBuilder.h"
+#include "RCA1802InstrInfo.h"
 #include "RCA1802MachineFunctionInfo.h"
 #include "RCA1802Subtarget.h"
 #include "llvm/CodeGen/GlobalISel/MachineIRBuilder.h"
@@ -32,11 +34,17 @@ bool RCA1802FrameLowering::hasFPImpl(const MachineFunction &MF) const {
 }
 
 void RCA1802FrameLowering::emitPrologue(MachineFunction &MF,
-                                    MachineBasicBlock &MBB) const {
-}
+                                        MachineBasicBlock &MBB) const {}
 
 void RCA1802FrameLowering::emitEpilogue(MachineFunction &MF,
-                                    MachineBasicBlock &MBB) const {
+                                        MachineBasicBlock &MBB) const {
+  const RCA1802InstrInfo &TII =
+      *MF.getSubtarget<RCA1802Subtarget>().getInstrInfo();
+  MachineBasicBlock::iterator MBBI = MBB.getLastNonDebugInstr();
+  DebugLoc DL = MBBI != MBB.end() ? MBBI->getDebugLoc() : DebugLoc();
+
+  BuildMI(MBB, MBBI, DL, TII.get(RCA1802::RET_PSEUDO))
+      .setMIFlag(MachineInstr::FrameDestroy);
 }
 
 bool RCA1802FrameLowering::spillCalleeSavedRegisters(
@@ -52,15 +60,13 @@ bool RCA1802FrameLowering::restoreCalleeSavedRegisters(
 }
 
 void RCA1802FrameLowering::determineCalleeSaves(MachineFunction &MF,
-                                            BitVector &SavedRegs,
-                                            RegScavenger *RS) const {
+                                                BitVector &SavedRegs,
+                                                RegScavenger *RS) const {
   TargetFrameLowering::determineCalleeSaves(MF, SavedRegs, RS);
 }
 
 void RCA1802FrameLowering::processFunctionBeforeFrameFinalized(
-    MachineFunction &MF, RegScavenger *RS) const {
-}
+    MachineFunction &MF, RegScavenger *RS) const {}
 
 void RCA1802FrameLowering::offsetSP(MachineIRBuilder &Builder,
-                                int64_t Offset) const {
-}
+                                    int64_t Offset) const {}

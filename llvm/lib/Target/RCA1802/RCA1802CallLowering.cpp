@@ -11,12 +11,12 @@
 //===----------------------------------------------------------------------===//
 
 #include "RCA1802CallLowering.h"
+#include "MCTargetDesc/RCA1802MCTargetDesc.h"
 #include "RCA1802CallingConv.h"
 #include "RCA1802ISelLowering.h"
 #include "RCA1802MachineFunctionInfo.h"
 #include "RCA1802RegisterInfo.h"
 #include "RCA1802Subtarget.h"
-#include "MCTargetDesc/RCA1802MCTargetDesc.h"
 #include "llvm/CodeGen/Analysis.h"
 #include "llvm/CodeGen/GlobalISel/MachineIRBuilder.h"
 #include "llvm/CodeGen/MachineFrameInfo.h"
@@ -29,7 +29,8 @@ namespace {
 
 struct RCA1802OutgoingValueHandler : public CallLowering::OutgoingValueHandler {
   RCA1802OutgoingValueHandler(MachineIRBuilder &MIRBuilder,
-                          MachineRegisterInfo &MRI, MachineInstrBuilder &MIB)
+                              MachineRegisterInfo &MRI,
+                              MachineInstrBuilder &MIB)
       : OutgoingValueHandler(MIRBuilder, MRI), MIB(MIB) {}
 
   void assignValueToReg(Register ValVReg, Register PhysReg,
@@ -62,7 +63,7 @@ struct RCA1802OutgoingValueHandler : public CallLowering::OutgoingValueHandler {
 
 struct RCA1802OutgoingArgsHandler : public RCA1802OutgoingValueHandler {
   RCA1802OutgoingArgsHandler(MachineIRBuilder &MIRBuilder,
-                         MachineRegisterInfo &MRI, MachineInstrBuilder &MIB)
+                             MachineRegisterInfo &MRI, MachineInstrBuilder &MIB)
       : RCA1802OutgoingValueHandler(MIRBuilder, MRI, MIB) {}
 
   Register getStackAddress(uint64_t Size, int64_t Offset,
@@ -80,7 +81,7 @@ struct RCA1802OutgoingArgsHandler : public RCA1802OutgoingValueHandler {
 
 struct RCA1802IncomingValueHandler : public CallLowering::IncomingValueHandler {
   RCA1802IncomingValueHandler(MachineIRBuilder &MIRBuilder,
-                          MachineRegisterInfo &MRI)
+                              MachineRegisterInfo &MRI)
       : IncomingValueHandler(MIRBuilder, MRI) {}
 
   void assignValueToReg(Register ValVReg, Register PhysReg,
@@ -110,7 +111,7 @@ struct RCA1802IncomingValueHandler : public CallLowering::IncomingValueHandler {
 
 struct RCA1802IncomingReturnHandler : public RCA1802IncomingValueHandler {
   RCA1802IncomingReturnHandler(MachineIRBuilder &MIRBuilder,
-                           MachineRegisterInfo &MRI)
+                               MachineRegisterInfo &MRI)
       : RCA1802IncomingValueHandler(MIRBuilder, MRI) {}
 
   Register getStackAddress(uint64_t Size, int64_t Offset,
@@ -129,8 +130,9 @@ struct RCA1802IncomingReturnHandler : public RCA1802IncomingValueHandler {
 } // namespace
 
 bool RCA1802CallLowering::lowerReturn(MachineIRBuilder &MIRBuilder,
-                                  const Value *Val, ArrayRef<Register> VRegs,
-                                  FunctionLoweringInfo &FLI) const {
+                                      const Value *Val,
+                                      ArrayRef<Register> VRegs,
+                                      FunctionLoweringInfo &FLI) const {
   MachineFunction &MF = MIRBuilder.getMF();
   auto MIB = MIRBuilder.buildInstrNoInsert(RCA1802::RET);
 
@@ -142,11 +144,13 @@ bool RCA1802CallLowering::lowerReturn(MachineIRBuilder &MIRBuilder,
     SmallVector<ArgInfo, 8> SplitArgs;
     ArgInfo OrigArg{VRegs, Val->getType(), 0};
     setArgFlags(OrigArg, AttributeList::ReturnIndex, DL, *FLI.Fn);
-    CallLowering::splitToValueTypes(OrigArg, SplitArgs, DL, TLI.getCallingConv());
+    CallLowering::splitToValueTypes(OrigArg, SplitArgs, DL,
+                                    TLI.getCallingConv());
 
     RCA1802OutgoingValueHandler Handler(MIRBuilder, MRI, MIB);
     OutgoingValueAssigner Assigner(llvm::CC_RCA1802);
-    if (!determineAndHandleAssignments(Handler, Assigner, SplitArgs, MIRBuilder, TLI.getCallingConv(), false))
+    if (!determineAndHandleAssignments(Handler, Assigner, SplitArgs, MIRBuilder,
+                                       TLI.getCallingConv(), false))
       return false;
   }
 
@@ -167,20 +171,22 @@ bool RCA1802CallLowering::lowerFormalArguments(
   for (const auto &Arg : F.args()) {
     ArgInfo OrigArg{VRegs[i], Arg.getType(), i};
     setArgFlags(OrigArg, i + AttributeList::FirstArgIndex, DL, F);
-    CallLowering::splitToValueTypes(OrigArg, SplitArgs, DL, TLI.getCallingConv());
+    CallLowering::splitToValueTypes(OrigArg, SplitArgs, DL,
+                                    TLI.getCallingConv());
     ++i;
   }
 
   RCA1802IncomingValueHandler Handler(MIRBuilder, MRI);
   IncomingValueAssigner Assigner(llvm::CC_RCA1802);
-  if (!determineAndHandleAssignments(Handler, Assigner, SplitArgs, MIRBuilder, TLI.getCallingConv(), F.isVarArg()))
+  if (!determineAndHandleAssignments(Handler, Assigner, SplitArgs, MIRBuilder,
+                                     TLI.getCallingConv(), F.isVarArg()))
     return false;
 
   return true;
 }
 
 bool RCA1802CallLowering::lowerCall(MachineIRBuilder &MIRBuilder,
-                               CallLoweringInfo &Info) const {
+                                    CallLoweringInfo &Info) const {
   MachineFunction &MF = MIRBuilder.getMF();
   MachineRegisterInfo &MRI = MF.getRegInfo();
   const DataLayout &DL = MF.getDataLayout();
@@ -193,21 +199,23 @@ bool RCA1802CallLowering::lowerCall(MachineIRBuilder &MIRBuilder,
 
   SmallVector<ArgInfo, 8> InArgs;
   if (!Info.CanLowerReturn) {
-    CallLowering::splitToValueTypes(Info.OrigRet, InArgs, DL, TLI.getCallingConv());
+    CallLowering::splitToValueTypes(Info.OrigRet, InArgs, DL,
+                                    TLI.getCallingConv());
   }
 
   // Calculate stack size required for arguments
   OutgoingValueAssigner Assigner(llvm::CC_RCA1802);
   SmallVector<CCValAssign, 16> ArgLocs;
-  CCState CCInfo(Info.CallConv, Info.IsVarArg, MF, ArgLocs, MF.getFunction().getContext());
+  CCState CCInfo(Info.CallConv, Info.IsVarArg, MF, ArgLocs,
+                 MF.getFunction().getContext());
   determineAssignments(Assigner, OutArgs, CCInfo);
   unsigned StackSize = CCInfo.getStackSize();
 
   auto CallSeqStart = MIRBuilder.buildInstr(RCA1802::ADJCALLSTACKDOWN);
   CallSeqStart.addImm(StackSize).addImm(0);
 
-  auto Call = MIRBuilder.buildInstrNoInsert(RCA1802::CALL_inst)
-                  .add(Info.Callee);
+  auto Call =
+      MIRBuilder.buildInstrNoInsert(RCA1802::CALL_PSEUDO).add(Info.Callee);
 
   RCA1802OutgoingArgsHandler OutHandler(MIRBuilder, MRI, Call);
   if (!handleAssignments(OutHandler, OutArgs, CCInfo, ArgLocs, MIRBuilder))
@@ -218,7 +226,9 @@ bool RCA1802CallLowering::lowerCall(MachineIRBuilder &MIRBuilder,
   if (!Info.CanLowerReturn) {
     RCA1802IncomingReturnHandler InHandler(MIRBuilder, MRI);
     IncomingValueAssigner InAssigner(llvm::CC_RCA1802);
-    if (!determineAndHandleAssignments(InHandler, InAssigner, InArgs, MIRBuilder, Info.CallConv, Info.IsVarArg))
+    if (!determineAndHandleAssignments(InHandler, InAssigner, InArgs,
+                                       MIRBuilder, Info.CallConv,
+                                       Info.IsVarArg))
       return false;
   }
 
